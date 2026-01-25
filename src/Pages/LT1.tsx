@@ -110,7 +110,7 @@ export default function LT1() {
                 </div>
             </Section>
 
-            <div ref={cfpRef} />
+            <div ref={cfpRef} className="scroll-mt-20" />
             <Section
                 id="cfp"
                 title="LT募集（CFP）"
