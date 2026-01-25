@@ -177,7 +177,7 @@ export default function LT1() {
                 <Section
                     id="cfp"
                     title="LT募集（CFP）"
-                    description="登壇者未定の間はここを強く見せます。初心者歓迎。"
+                    description="あなたの「好き」を語ってみませんか？ 初心者も大歓迎です！"
                 >
                     <div className="rounded-2xl border border-gray-200 p-6">
                         <div className="grid gap-4 lg:grid-cols-2">
