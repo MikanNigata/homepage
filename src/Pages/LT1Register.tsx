@@ -86,12 +86,17 @@ export default function LT1Register() {
                             ? "運営から連絡をお待ちください。"
                             : "当日のDiscord参加をお待ちしています！"}
                     </p>
-                    <Link
-                        to="/events/lt-1"
-                        className="text-indigo-600 hover:text-indigo-800 font-medium"
-                    >
-                        ← イベントページに戻る
-                    </Link>
+                    <div className="mb-6 flex flex-col gap-3">
+                        <Button variant="primary" to="/join">
+                            Discordに参加する
+                        </Button>
+                        <Link
+                            to="/events/lt-1"
+                            className="text-sm text-gray-600 hover:text-gray-900"
+                        >
+                            イベントページに戻る
+                        </Link>
+                    </div>
                 </div>
             </div>
         );

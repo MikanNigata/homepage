@@ -250,9 +250,9 @@ export default function LT1() {
                 <Section id="join" title="参加方法（Discord）">
                     <div className="grid gap-4 lg:grid-cols-3">
                         {[
-                            { t: "1. 参加登録", d: "参加登録フォームから登録します。" },
-                            { t: "2. 招待リンク受取", d: "Discord招待リンクが届きます。" },
-                            { t: "3. 当日参加", d: "開始前にチェックインして参加します。" },
+                            { t: "1. 参加登録", d: "登録フォームから参加・LT応募のエントリーをします。" },
+                            { t: "2. Discord参加", d: "完了画面のリンク等から、Discordサーバーに参加します。" },
+                            { t: "3. 当日参加", d: "開始時間にイベント用ボイスチャンネルに接続します。" },
                         ].map((x) => (
                             <div key={x.t} className="rounded-2xl border border-gray-200 p-6">
                                 <h3 className="text-sm font-semibold">{x.t}</h3>
