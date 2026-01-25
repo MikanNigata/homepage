@@ -4,8 +4,8 @@ import Button from "../Components/ui/Button";
 
 type FormType = "listener" | "presenter";
 
-// TODO: Replace with your Discord Webhook URL
-const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1464948642224935150/Odj3Z0-U-iD7Q9mMysWmvSR-khyw1qTwpyEGXl-gjg8HbCx-ZWxHi6AYRcc_JZYxF-ru";
+// Discord Webhook URL from environment variables
+const DISCORD_WEBHOOK_URL = import.meta.env.VITE_DISCORD_WEBHOOK_URL;
 
 export default function LT1Register() {
     const [formType, setFormType] = useState<FormType>("listener");
@@ -25,7 +25,8 @@ export default function LT1Register() {
         setError(null);
 
         if (!DISCORD_WEBHOOK_URL) {
-            setError("Webhook URLが設定されていません。運営にお問い合わせください。");
+            setError("Webhook URLが設定されていません。管理者にお問い合わせください。");
+            console.error("VITE_DISCORD_WEBHOOK_URL is missing in .env");
             setIsSubmitting(false);
             return;
         }
