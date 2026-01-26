@@ -8,6 +8,7 @@ type Props = {
     href?: string;
     to?: string;
     onClick?: () => void;
+    className?: string;
     children: React.ReactNode;
 };
 
@@ -26,8 +27,9 @@ export default function Button({
     to,
     onClick,
     children,
+    className: extraClassName = "",
 }: Props) {
-    const className = `${base} ${styles[variant]}`;
+    const className = `${base} ${styles[variant]} ${extraClassName}`;
 
     // Internal navigation using React Router
     if (to) {
