@@ -76,9 +76,6 @@ export default function LT1() {
                             <a className="hover:text-gray-900" href="#about">
                                 概要
                             </a>
-                            <a className="hover:text-gray-900" href="#cfp">
-                                LT応募
-                            </a>
                             <a className="hover:text-gray-900" href="#timetable">
                                 TS
                             </a>
@@ -101,7 +98,6 @@ export default function LT1() {
                         <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
                             <div>
                                 <div className="flex flex-wrap gap-2">
-                                    <Badge label="LT応募〆 TBD" />
                                     <Badge label="参加登録〆 TBD" />
                                 </div>
 
@@ -112,15 +108,15 @@ export default function LT1() {
                                     湘南藤沢高専 LT会
                                 </p>
                                 <p className="mt-2 text-sm leading-6 text-gray-600">
-                                    Discord開催｜参加者・LT登壇者募集中
+                                    Discord開催｜参加者募集中
                                 </p>
 
                                 <div className="mt-6 flex flex-wrap gap-3">
                                     <Button variant="primary" to="/events/lt-1/register">
                                         参加登録
                                     </Button>
-                                    <Button variant="secondary" onClick={scrollToCfp}>
-                                        LT応募（CFP）
+                                    <Button variant="secondary" to="/join">
+                                        Discord参加
                                     </Button>
                                 </div>
 
@@ -130,26 +126,15 @@ export default function LT1() {
                             </div>
 
                             <div className="rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 p-4 sm:p-6">
-                                {import.meta.env.VITE_YOUTUBE_PR_VIDEO_URL ? (
-                                    <div className="aspect-video w-full overflow-hidden rounded-xl shadow-sm ring-1 ring-gray-200">
-                                        <iframe
-                                            className="h-full w-full"
-                                            src={import.meta.env.VITE_YOUTUBE_PR_VIDEO_URL}
-                                            title="PR動画"
-                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                            allowFullScreen
-                                        />
-                                    </div>
-                                ) : (
-                                    <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-200">
-                                        <p className="text-sm font-medium text-gray-900">
-                                            Discord開催（オンライン）
-                                        </p>
-                                        <p className="mt-2 text-sm leading-6 text-gray-600">
-                                            参加登録後にDiscord招待リンクをお送りします。当日は開始5分前からチェックインできます。
-                                        </p>
-                                    </div>
-                                )}
+                                <div className="aspect-video w-full overflow-hidden rounded-xl shadow-sm ring-1 ring-gray-200">
+                                    <iframe
+                                        className="h-full w-full"
+                                        src="https://www.youtube.com/embed/m4VahiqP9vA"
+                                        title="PR動画"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                        allowFullScreen
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -185,37 +170,6 @@ export default function LT1() {
                     </div>
                 </Section>
 
-                <div ref={cfpRef} className="scroll-mt-20" />
-                <Section
-                    id="cfp"
-                    title="LT募集（CFP）"
-                    description="あなたの「好き」を語ってみませんか？ 初心者も大歓迎です！"
-                >
-                    <div className="rounded-2xl border border-gray-200 p-6">
-                        <div className="grid gap-4 lg:grid-cols-2">
-                            <div>
-                                <h3 className="text-sm font-semibold">募集概要</h3>
-                                <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-gray-600">
-                                    <li>テーマ：「情熱を語れ」（フリー）</li>
-                                    <li>持ち時間：<span className="font-medium">7分</span>（発表5分＋質疑2分）</li>
-                                    <li>形式：Discord（画面共有）</li>
-                                    <li>初学者にもわかるように語ろう！</li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h3 className="text-sm font-semibold">応募</h3>
-                                <p className="mt-2 text-sm text-gray-600">
-                                    応募フォームに「タイトル・概要・連絡先」などを入力してください。
-                                </p>
-                                <div className="mt-4">
-                                    <Button variant="secondary" href="https://example.com/cfp">
-                                        LT応募（CFP）
-                                    </Button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </Section>
 
                 <Section id="timetable" title="タイムテーブル（暫定）">
                     <div className="overflow-hidden rounded-2xl border border-gray-200">

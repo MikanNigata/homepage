@@ -9,7 +9,7 @@ type Props = {
 
 export default function Section({ id, title, description, children }: Props) {
     return (
-        <section id={id} className="py-14">
+        <section id={id} className="py-14 scroll-mt-24">
             <div className="mx-auto w-full max-w-6xl px-4">
                 <div className="mb-6">
                     <h2 className="text-xl font-semibold tracking-tight text-gray-900">
