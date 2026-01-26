@@ -1,10 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
+
 type Variant = "primary" | "secondary" | "ghost";
+type Size = "sm" | "md" | "lg";
 
 type Props = {
     variant?: Variant;
+    size?: Size;
     href?: string;
     to?: string;
     onClick?: () => void;
@@ -12,7 +15,14 @@ type Props = {
 };
 
 const base =
-    "inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-2";
+    "inline-flex items-center justify-center rounded-xl font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-2";
+
+const sizeStyles: Record<Size, string> = {
+    sm: "px-3 py-2 text-xs",
+    md: "px-5 py-3 text-sm",
+    lg: "px-6 py-4 text-base",
+};
+
 const styles: Record<Variant, string> = {
     primary: "bg-gray-900 text-white hover:bg-gray-800 focus:ring-gray-900",
     secondary:
@@ -22,12 +32,13 @@ const styles: Record<Variant, string> = {
 
 export default function Button({
     variant = "primary",
+    size = "md",
     href,
     to,
     onClick,
     children,
 }: Props) {
-    const className = `${base} ${styles[variant]}`;
+    const className = `${base} ${sizeStyles[size]} ${styles[variant]}`;
 
     // Internal navigation using React Router
     if (to) {
