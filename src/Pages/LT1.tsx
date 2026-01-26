@@ -71,7 +71,13 @@ export default function LT1() {
                 {/* Header */}
                 <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur">
                     <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-                        <div className="text-sm font-semibold">好きを、語れ。</div>
+                        <div className="flex items-center gap-4">
+                            <Button variant="ghost" size="sm" to="/">
+                                ← Home
+                            </Button>
+                            <div className="h-4 w-px bg-gray-300" />
+                            <div className="text-sm font-semibold">好きを、語れ。</div>
+                        </div>
                         <nav className="hidden gap-5 text-sm text-gray-600 md:flex">
                             <a className="hover:text-gray-900" href="#about">
                                 概要
