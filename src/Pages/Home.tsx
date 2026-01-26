@@ -27,7 +27,7 @@ export default function Home() {
                         </nav>
                         <div className="flex gap-3">
                             <Button variant="secondary" size="sm" to="/join">Discord参加</Button>
-                            <Button variant="primary" size="sm" to="/coming-soon">Access</Button>
+                            <Button variant="primary" size="sm" to="/coming-soon" className="animate-pulse">Access</Button>
                         </div>
                     </div>
                 </div>
@@ -43,10 +43,10 @@ export default function Home() {
                     />
                 </div>
                 <div className="relative mx-auto max-w-7xl px-6 lg:px-8 text-center">
-                    <h2 className="text-4xl font-bold tracking-tight text-white sm:text-6xl font-serif">
+                    <h2 className="text-4xl font-bold tracking-tight text-white sm:text-6xl font-serif animate-fade-in-up">
                         未来を創る、<br className="sm:hidden" />技術者の原点。
                     </h2>
-                    <p className="mt-6 text-lg leading-8 text-gray-300">
+                    <p className="mt-6 text-lg leading-8 text-gray-300 animate-fade-in-up opacity-0" style={{ animationDelay: "0.2s" }}>
                         実践的な技術教育と豊かな人間形成。<br />
                         湘南藤沢高専は、社会を支えるエンジニアを育成します。
                     </p>
@@ -62,7 +62,7 @@ export default function Home() {
                             重要なお知らせ
                         </h3>
                         <div className="space-y-6">
-                            <Link to="/events/lt-1" className="block group">
+                            <Link to="/events/lt-1" className="block group transition-all duration-300 hover:-translate-y-1">
                                 <div className="flex flex-col sm:flex-row gap-4 items-start">
                                     <div className="shrink-0 w-24 text-sm text-gray-500 font-mono">2026.01.26</div>
                                     <div>
@@ -106,7 +106,7 @@ export default function Home() {
                             </ul>
                         </div>
 
-                        <Link to="/events/lt-1" className="block relative overflow-hidden rounded-xl group">
+                        <Link to="/events/lt-1" className="block relative overflow-hidden rounded-xl group transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
                             <div className="absolute inset-0 bg-indigo-900/90 mix-blend-multiply transition group-hover:bg-indigo-900/80" />
                             <img src="https://images.unsplash.com/photo-1544531586-fde5298cdd40?auto=format&fit=crop&q=80" alt="" className="h-40 w-full object-cover" />
                             <div className="absolute inset-0 p-6 flex flex-col justify-center">
