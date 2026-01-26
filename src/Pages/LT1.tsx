@@ -129,7 +129,7 @@ export default function LT1() {
                                 <div className="aspect-video w-full overflow-hidden rounded-xl shadow-sm ring-1 ring-gray-200">
                                     <iframe
                                         className="h-full w-full"
-                                        src="https://www.youtube.com/embed/m4VahiqP9vA"
+                                        src={import.meta.env.VITE_YOUTUBE_URL}
                                         title="PR動画"
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                         allowFullScreen
