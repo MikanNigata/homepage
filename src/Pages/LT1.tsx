@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import Button from "../Components/ui/Button";
 import Badge from "../Components/ui/Badge";
 import Section from "../Components/layout/Section";
+import lt1Config from "../../config/lt-1.json";
 
 export default function LT1() {
     const cfpRef = useRef<HTMLDivElement | null>(null);
@@ -129,15 +130,27 @@ export default function LT1() {
                                 </p>
                             </div>
 
-                            <div className="rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 p-8">
-                                <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-200">
-                                    <p className="text-sm font-medium text-gray-900">
-                                        Discord開催（オンライン）
-                                    </p>
-                                    <p className="mt-2 text-sm leading-6 text-gray-600">
-                                        参加登録後にDiscord招待リンクをお送りします。当日は開始5分前からチェックインできます。
-                                    </p>
-                                </div>
+                            <div className="rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 p-4 sm:p-6">
+                                {lt1Config.prVideo.youtubeEmbedUrl ? (
+                                    <div className="aspect-video w-full overflow-hidden rounded-xl shadow-sm ring-1 ring-gray-200">
+                                        <iframe
+                                            className="h-full w-full"
+                                            src={lt1Config.prVideo.youtubeEmbedUrl}
+                                            title="PR動画"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                            allowFullScreen
+                                        />
+                                    </div>
+                                ) : (
+                                    <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-200">
+                                        <p className="text-sm font-medium text-gray-900">
+                                            Discord開催（オンライン）
+                                        </p>
+                                        <p className="mt-2 text-sm leading-6 text-gray-600">
+                                            参加登録後にDiscord招待リンクをお送りします。当日は開始5分前からチェックインできます。
+                                        </p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -165,7 +178,7 @@ export default function LT1() {
                         </div>
                     </div>
                     <div className="mt-4 rounded-2xl border border-gray-200 bg-gray-50 p-6">
-                        <h3 className="text-sm font-semibold">🎁 景品</h3>
+                        <h3 className="text-sm font-semibold font-mono">景品</h3>
                         <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-gray-600">
                             <li>登壇者から抽選で <span className="font-medium">Discord Nitro</span> をプレゼント！</li>
                             <li>学生会長選出の優秀発表者には <span className="font-medium">「教員」ロール</span> を付与！</li>
@@ -223,7 +236,7 @@ export default function LT1() {
                                 </tr>
                                 <tr>
                                     <td className="px-4 py-3">19:10</td>
-                                    <td className="px-4 py-3">🎤 LT発表（発表5分＋質疑2分）× n組</td>
+                                    <td className="px-4 py-3">LT発表（発表5分＋質疑2分）× n組</td>
                                     <td className="px-4 py-3">TBD</td>
                                 </tr>
                                 <tr>
@@ -238,7 +251,7 @@ export default function LT1() {
                                 </tr>
                                 <tr className="bg-gray-50">
                                     <td className="px-4 py-3">20:45〜</td>
-                                    <td className="px-4 py-3">🎉 任意交流会（VC分けて感想会など）</td>
+                                    <td className="px-4 py-3">任意交流会（VC分けて感想会など）</td>
                                     <td className="px-4 py-3">自由</td>
                                 </tr>
                             </tbody>
