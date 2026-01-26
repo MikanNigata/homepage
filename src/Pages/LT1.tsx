@@ -2,7 +2,6 @@ import { useRef, useState, useEffect } from "react";
 import Button from "../Components/ui/Button";
 import Badge from "../Components/ui/Badge";
 import Section from "../Components/layout/Section";
-import lt1Config from "../../config/lt-1.json";
 
 export default function LT1() {
     const cfpRef = useRef<HTMLDivElement | null>(null);
@@ -131,11 +130,11 @@ export default function LT1() {
                             </div>
 
                             <div className="rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 p-4 sm:p-6">
-                                {lt1Config.prVideo.youtubeEmbedUrl ? (
+                                {import.meta.env.VITE_YOUTUBE_PR_VIDEO_URL ? (
                                     <div className="aspect-video w-full overflow-hidden rounded-xl shadow-sm ring-1 ring-gray-200">
                                         <iframe
                                             className="h-full w-full"
-                                            src={lt1Config.prVideo.youtubeEmbedUrl}
+                                            src={import.meta.env.VITE_YOUTUBE_PR_VIDEO_URL}
                                             title="PR動画"
                                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                             allowFullScreen
