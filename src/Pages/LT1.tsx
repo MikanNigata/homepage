@@ -6,6 +6,7 @@ import Section from "../Components/layout/Section";
 export default function LT1() {
     const cfpRef = useRef<HTMLDivElement | null>(null);
     const [showSplash, setShowSplash] = useState(true);
+    const DISCORD_INVITE_URL = "https://discord.gg/sf-kosen";
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -13,10 +14,6 @@ export default function LT1() {
         }, 1500);
         return () => clearTimeout(timer);
     }, []);
-
-    const scrollToCfp = () => {
-        cfpRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    };
 
     return (
         <>
@@ -125,8 +122,8 @@ export default function LT1() {
                                     <Button variant="primary" to="/events/lt-1/register">
                                         参加登録
                                     </Button>
-                                    <Button variant="secondary" onClick={scrollToCfp}>
-                                        LT応募（CFP）
+                                    <Button variant="secondary" href={DISCORD_INVITE_URL}>
+                                        Discord参加
                                     </Button>
                                 </div>
 
@@ -214,8 +211,8 @@ export default function LT1() {
                                     応募フォームに「タイトル・概要・連絡先」などを入力してください。
                                 </p>
                                 <div className="mt-4">
-                                    <Button variant="secondary" href="https://example.com/cfp">
-                                        LT応募（CFP）
+                                    <Button variant="secondary" to="/events/lt-1/register">
+                                        参加登録（LT応募もこちら）
                                     </Button>
                                 </div>
                             </div>
