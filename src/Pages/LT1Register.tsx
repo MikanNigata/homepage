@@ -86,23 +86,23 @@ export default function LT1Register() {
         const trimmedDescription = description.trim();
 
         if (!user) {
-            setError("Sign in with Discord before submitting.");
+            setError("送信する前にDiscordでログインしてください。");
             return;
         }
         if (!trimmedTitle) {
-            setError("Title is required.");
+            setError("タイトルは必須です。");
             return;
         }
         if (trimmedTitle.length > 100) {
-            setError("Title is too long.");
+            setError("タイトルが長すぎます。");
             return;
         }
         if (trimmedDescription.length > 1000) {
-            setError("Description is too long.");
+            setError("概要が長すぎます。");
             return;
         }
         if (findForbidden(trimmedTitle) || findForbidden(trimmedDescription)) {
-            setError("URLs and @ mentions are not allowed.");
+            setError("URLやメンションは使用できません。");
             return;
         }
 
@@ -120,12 +120,12 @@ export default function LT1Register() {
 
             const data = (await response.json().catch(() => ({}))) as { error?: string };
             if (!response.ok) {
-                throw new Error(data.error || "Submission failed.");
+                throw new Error(data.error || "送信に失敗しました。");
             }
 
             setIsSubmitted(true);
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Submission failed.");
+            setError(err instanceof Error ? err.message : "送信に失敗しました。");
         } finally {
             setIsSubmitting(false);
         }
@@ -141,20 +141,20 @@ export default function LT1Register() {
                 <div className="text-center px-4">
                     <div className="text-5xl mb-4">✅</div>
                     <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                        Submission received
+                        登録を受け付けました
                     </h1>
                     <p className="text-gray-600 mb-6">
-                        We will reach out on Discord if we need any follow-up.
+                        必要に応じてDiscordでご連絡します。
                     </p>
                     <div className="mb-6 flex flex-col gap-3">
                         <Button variant="primary" to="/join">
-                            Join the Discord
+                            Discordに参加する
                         </Button>
                         <Link
                             to="/events/lt-1"
                             className="text-sm text-gray-600 hover:text-gray-900"
                         >
-                            Back to event page
+                            イベントページに戻る
                         </Link>
                     </div>
                 </div>
@@ -168,40 +168,40 @@ export default function LT1Register() {
                 <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-4">
                     <div>
                         <div className="text-sm font-semibold text-gray-900">
-                            LT submission
+                            LT登壇登録
                         </div>
                         <div className="text-xs text-gray-600">
-                            Sign in with Discord to identify the submitter.
+                            登壇者を確認するため、Discordでサインインしてください。
                         </div>
                     </div>
                     <Link className="text-sm text-gray-600 hover:text-gray-900" to="/events/lt-1">
-                        Back
+                        戻る
                     </Link>
                 </div>
             </header>
 
             <main className="mx-auto max-w-2xl px-4 py-10">
                 <div className="rounded-xl border border-gray-200 p-4">
-                    <div className="text-sm font-semibold text-gray-900">Discord sign-in</div>
+                    <div className="text-sm font-semibold text-gray-900">Discord連携</div>
                     {authLoading ? (
-                        <p className="mt-1 text-sm text-gray-600">Checking session…</p>
+                        <p className="mt-1 text-sm text-gray-600">セッションを確認中…</p>
                     ) : user ? (
                         <p className="mt-1 text-sm text-gray-600">
-                            Signed in as <span className="font-medium">{displayName}</span>
+                            ログイン中: <span className="font-medium">{displayName}</span>
                         </p>
                     ) : (
                         <p className="mt-1 text-sm text-gray-600">
-                            Sign in is required to submit.
+                            登録にはサインインが必要です。
                         </p>
                     )}
                     <div className="mt-3 flex flex-wrap gap-2">
                         {user ? (
                             <Button variant="secondary" onClick={handleLogout}>
-                                Sign out
+                                ログアウト
                             </Button>
                         ) : (
                             <Button variant="primary" onClick={handleLogin}>
-                                Sign in with Discord
+                                Discordでログイン
                             </Button>
                         )}
                     </div>
@@ -210,7 +210,7 @@ export default function LT1Register() {
                 <form onSubmit={handleSubmit} className="space-y-6 mt-6">
                     <div>
                         <label className="block text-sm font-medium text-gray-900 mb-2">
-                            Title <span className="text-red-500">*</span>
+                            発表タイトル <span className="text-red-500">*</span>
                         </label>
                         <input
                             type="text"
@@ -218,7 +218,7 @@ export default function LT1Register() {
                             maxLength={100}
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
-                            placeholder="Short talk title"
+                            placeholder="簡潔なタイトルを入力"
                             className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                         />
                         {titleIssue && (
@@ -228,14 +228,14 @@ export default function LT1Register() {
 
                     <div>
                         <label className="block text-sm font-medium text-gray-900 mb-2">
-                            Description (optional)
+                            概要 (任意)
                         </label>
                         <textarea
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             rows={4}
                             maxLength={1000}
-                            placeholder="A short summary of the topic"
+                            placeholder="発表内容の簡単なまとめ"
                             className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 resize-none"
                         />
                         {descriptionIssue && (
@@ -245,7 +245,7 @@ export default function LT1Register() {
 
                     <div className="rounded-xl bg-indigo-50 p-4">
                         <p className="text-sm text-indigo-800">
-                            URLs (including short links) and @ mentions are blocked in submissions.
+                            URLやメンション（@）は入力できません。
                         </p>
                     </div>
 
@@ -256,12 +256,12 @@ export default function LT1Register() {
                     )}
 
                     <Button type="submit" disabled={isSubmitting || !user || !!titleIssue || !!descriptionIssue}>
-                        {isSubmitting ? "Submitting…" : "Submit LT proposal"}
+                        {isSubmitting ? "送信中…" : "LTに応募する"}
                     </Button>
                 </form>
 
                 <p className="mt-6 text-center text-xs text-gray-500">
-                    Your Discord account is recorded via OAuth2 for submitter tracking.
+                    投稿者の確認のため、OAuth2経由でDiscordアカウントが記録されます。
                 </p>
             </main>
         </div>
