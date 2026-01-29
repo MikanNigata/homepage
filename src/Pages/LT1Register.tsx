@@ -1,87 +1,160 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Button from "../Components/ui/Button";
 
+type AuthUser = {
+    id: string;
+    username: string;
+    globalName?: string | null;
+};
 
+const URL_PATTERN = /(?:https?:\/\/|www\.)[^\s]+/i;
+const DOMAIN_PATTERN = /\b[a-z0-9-]+(?:\.[a-z0-9-]+)*\.[a-z]{2,}(?:\/[^\s]*)?/i;
 
-// Discord Webhook URL from environment variables
-const DISCORD_WEBHOOK_URL = import.meta.env.VITE_DISCORD_WEBHOOK_URL;
+const findForbidden = (value: string) => {
+    const normalized = value.trim();
+    if (!normalized) {
+        return null;
+    }
+    if (normalized.includes("@")) {
+        return "Mentions (@) are not allowed.";
+    }
+    if (URL_PATTERN.test(normalized) || DOMAIN_PATTERN.test(normalized)) {
+        return "URLs (including short links) are not allowed.";
+    }
+    return null;
+};
 
 export default function LT1Register() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Form fields
-    const [discordName, setDiscordName] = useState("");
-    const [discordId, setDiscordId] = useState("");
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
 
+    const [authLoading, setAuthLoading] = useState(true);
+    const [user, setUser] = useState<AuthUser | null>(null);
+
+    useEffect(() => {
+        let active = true;
+        setAuthLoading(true);
+
+        fetch("/api/auth/status", { credentials: "include" })
+            .then(async (res) => {
+                if (!active) return;
+                if (!res.ok) {
+                    setUser(null);
+                    return;
+                }
+                const data = (await res.json()) as { user?: AuthUser };
+                setUser(data.user ?? null);
+            })
+            .catch(() => {
+                if (active) {
+                    setUser(null);
+                }
+            })
+            .finally(() => {
+                if (active) {
+                    setAuthLoading(false);
+                }
+            });
+
+        return () => {
+            active = false;
+        };
+    }, []);
+
+    const titleIssue = findForbidden(title);
+    const descriptionIssue = findForbidden(description);
+
+    const handleLogin = () => {
+        window.location.href = "/api/auth/login";
+    };
+
+    const handleLogout = async () => {
+        await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+        setUser(null);
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsSubmitting(true);
         setError(null);
 
-        if (!DISCORD_WEBHOOK_URL) {
-            setError("Webhook URLが設定されていません。管理者にお問い合わせください。");
-            console.error("VITE_DISCORD_WEBHOOK_URL is missing in .env");
-            setIsSubmitting(false);
+        const trimmedTitle = title.trim();
+        const trimmedDescription = description.trim();
+
+        if (!user) {
+            setError("Sign in with Discord before submitting.");
+            return;
+        }
+        if (!trimmedTitle) {
+            setError("Title is required.");
+            return;
+        }
+        if (trimmedTitle.length > 100) {
+            setError("Title is too long.");
+            return;
+        }
+        if (trimmedDescription.length > 1000) {
+            setError("Description is too long.");
+            return;
+        }
+        if (findForbidden(trimmedTitle) || findForbidden(trimmedDescription)) {
+            setError("URLs and @ mentions are not allowed.");
             return;
         }
 
-        const embed = {
-            title: "🎤 LT登壇応募",
-            color: 0x6366f1, // indigo
-            fields: [
-                { name: "Discord名", value: discordName, inline: true },
-                { name: "Discord ID", value: discordId || "未入力", inline: true },
-                { name: "発表タイトル", value: title },
-                { name: "発表概要", value: description || "未入力" },
-            ],
-            timestamp: new Date().toISOString(),
-            footer: { text: "好きを語ろう！湘南藤沢高専LT会" },
-        };
-
+        setIsSubmitting(true);
         try {
-            const response = await fetch(DISCORD_WEBHOOK_URL, {
+            const response = await fetch("/api/lt1/submit", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ embeds: [embed] }),
+                credentials: "include",
+                body: JSON.stringify({
+                    title: trimmedTitle,
+                    description: trimmedDescription,
+                }),
             });
 
+            const data = (await response.json().catch(() => ({}))) as { error?: string };
             if (!response.ok) {
-                throw new Error("送信に失敗しました");
+                throw new Error(data.error || "Submission failed.");
             }
 
             setIsSubmitted(true);
         } catch (err) {
-            setError("送信に失敗しました。時間をおいて再度お試しください。");
+            setError(err instanceof Error ? err.message : "Submission failed.");
         } finally {
             setIsSubmitting(false);
         }
     };
 
+    const displayName = user?.globalName
+        ? `${user.globalName} (${user.username})`
+        : user?.username;
+
     if (isSubmitted) {
         return (
             <div className="min-h-screen bg-white flex items-center justify-center">
                 <div className="text-center px-4">
-                    <div className="text-6xl mb-4">🎉</div>
+                    <div className="text-5xl mb-4">✅</div>
                     <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                        LT応募を受け付けました！
+                        Submission received
                     </h1>
                     <p className="text-gray-600 mb-6">
-                        運営から連絡をお待ちください。
+                        We will reach out on Discord if we need any follow-up.
                     </p>
                     <div className="mb-6 flex flex-col gap-3">
                         <Button variant="primary" to="/join">
-                            Discordに参加する
+                            Join the Discord
                         </Button>
                         <Link
                             to="/events/lt-1"
                             className="text-sm text-gray-600 hover:text-gray-900"
                         >
-                            イベントページに戻る
+                            Back to event page
                         </Link>
                     </div>
                 </div>
@@ -94,81 +167,85 @@ export default function LT1Register() {
             <header className="border-b border-gray-200">
                 <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-4">
                     <div>
-                        <div className="text-sm font-semibold text-gray-900">LT登壇応募</div>
-                        <div className="text-xs text-gray-600">好きを語ろう！湘南藤沢高専LT会</div>
+                        <div className="text-sm font-semibold text-gray-900">
+                            LT submission
+                        </div>
+                        <div className="text-xs text-gray-600">
+                            Sign in with Discord to identify the submitter.
+                        </div>
                     </div>
                     <Link className="text-sm text-gray-600 hover:text-gray-900" to="/events/lt-1">
-                        ← 戻る
+                        Back
                     </Link>
                 </div>
             </header>
 
             <main className="mx-auto max-w-2xl px-4 py-10">
-                {/* Form Type Selector Removed */}
+                <div className="rounded-xl border border-gray-200 p-4">
+                    <div className="text-sm font-semibold text-gray-900">Discord sign-in</div>
+                    {authLoading ? (
+                        <p className="mt-1 text-sm text-gray-600">Checking session…</p>
+                    ) : user ? (
+                        <p className="mt-1 text-sm text-gray-600">
+                            Signed in as <span className="font-medium">{displayName}</span>
+                        </p>
+                    ) : (
+                        <p className="mt-1 text-sm text-gray-600">
+                            Sign in is required to submit.
+                        </p>
+                    )}
+                    <div className="mt-3 flex flex-wrap gap-2">
+                        {user ? (
+                            <Button variant="secondary" onClick={handleLogout}>
+                                Sign out
+                            </Button>
+                        ) : (
+                            <Button variant="primary" onClick={handleLogin}>
+                                Sign in with Discord
+                            </Button>
+                        )}
+                    </div>
+                </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Discord Name */}
+                <form onSubmit={handleSubmit} className="space-y-6 mt-6">
                     <div>
                         <label className="block text-sm font-medium text-gray-900 mb-2">
-                            Discord表示名 <span className="text-red-500">*</span>
+                            Title <span className="text-red-500">*</span>
                         </label>
                         <input
                             type="text"
                             required
-                            value={discordName}
-                            onChange={(e) => setDiscordName(e.target.value)}
-                            placeholder="例: まふゆ"
-                            className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                        />
-                    </div>
-
-                    {/* Discord ID */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-900 mb-2">
-                            Discord ID（任意）
-                        </label>
-                        <input
-                            type="text"
-                            value={discordId}
-                            onChange={(e) => setDiscordId(e.target.value)}
-                            placeholder="例: mafuyu#1234 または 123456789012345678"
-                            className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                        />
-                        <p className="mt-1 text-xs text-gray-500">連絡用に使用することがあります</p>
-                    </div>
-
-                    {/* Presenter-only fields */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-900 mb-2">
-                            発表タイトル <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="text"
-                            required
+                            maxLength={100}
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
-                            placeholder="例: 私の推し技術を5分で熱く語る"
+                            placeholder="Short talk title"
                             className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                         />
+                        {titleIssue && (
+                            <p className="mt-2 text-xs text-red-600">{titleIssue}</p>
+                        )}
                     </div>
 
                     <div>
                         <label className="block text-sm font-medium text-gray-900 mb-2">
-                            発表概要（任意）
+                            Description (optional)
                         </label>
                         <textarea
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             rows={4}
-                            placeholder="どんな内容を話すか簡単に教えてください"
+                            maxLength={1000}
+                            placeholder="A short summary of the topic"
                             className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 resize-none"
                         />
+                        {descriptionIssue && (
+                            <p className="mt-2 text-xs text-red-600">{descriptionIssue}</p>
+                        )}
                     </div>
 
                     <div className="rounded-xl bg-indigo-50 p-4">
                         <p className="text-sm text-indigo-800">
-                            💡 発表時間は<span className="font-medium">7分</span>（発表5分＋質疑2分）です。
-                            初学者にもわかるように、情熱をもって語ってください！
+                            URLs (including short links) and @ mentions are blocked in submissions.
                         </p>
                     </div>
 
@@ -178,21 +255,13 @@ export default function LT1Register() {
                         </div>
                     )}
 
-                    <Button variant="primary" onClick={() => { }}>
-                        <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className="w-full"
-                        >
-                            {isSubmitting
-                                ? "送信中..."
-                                : "LT応募を送信"}
-                        </button>
+                    <Button type="submit" disabled={isSubmitting || !user || !!titleIssue || !!descriptionIssue}>
+                        {isSubmitting ? "Submitting…" : "Submit LT proposal"}
                     </Button>
                 </form>
 
                 <p className="mt-6 text-center text-xs text-gray-500">
-                    送信された情報はDiscordの運営チャンネルに通知されます
+                    Your Discord account is recorded via OAuth2 for submitter tracking.
                 </p>
             </main>
         </div>
