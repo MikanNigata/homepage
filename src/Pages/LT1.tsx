@@ -24,7 +24,7 @@ export default function LT1() {
                                     </p>
                                     <div className="mt-10 flex items-center justify-center gap-x-6 lg:justify-start">
                                         <Button variant="primary" to="/events/lt-1/register">
-                                            参加登録
+                                            登壇登録
                                         </Button>
                                         <Button variant="secondary" href={DISCORD_INVITE_URL}>
                                             Discord参加
