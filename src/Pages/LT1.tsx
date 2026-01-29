@@ -1,158 +1,65 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef } from "react";
 import Button from "../Components/ui/Button";
 import Badge from "../Components/ui/Badge";
 import Section from "../Components/layout/Section";
 
 export default function LT1() {
     const cfpRef = useRef<HTMLDivElement | null>(null);
-    const [showSplash, setShowSplash] = useState(true);
     const DISCORD_INVITE_URL = "https://discord.gg/sf-kosen";
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setShowSplash(false);
-        }, 1500);
-        return () => clearTimeout(timer);
-    }, []);
 
     return (
         <>
-            {/* Splash Screen */}
-            <div
-                className={`fixed inset-0 z-[100] flex items-center justify-center bg-white transition-all duration-700 ${showSplash ? "opacity-100" : "opacity-0 pointer-events-none"
-                    }`}
-            >
-                <div className="text-center overflow-hidden">
-                    <div className="overflow-hidden">
-                        <h1 className="text-5xl font-bold tracking-tight text-gray-900 sm:text-7xl splash-title">
-                            好きを、語れ。
-                        </h1>
-                    </div>
-                    <div className="overflow-hidden mt-4">
-                        <p className="text-lg text-gray-400 splash-subtitle">湘南藤沢高専 LT会</p>
-                    </div>
-                    <div className="mt-6 flex justify-center">
-                        <div className="splash-line" />
-                    </div>
-                </div>
-                <style>{`
-                    @keyframes slideUp {
-                        0% { transform: translateY(100%); opacity: 0; }
-                        100% { transform: translateY(0); opacity: 1; }
-                    }
-                    @keyframes fadeSlideUp {
-                        0% { transform: translateY(20px); opacity: 0; }
-                        100% { transform: translateY(0); opacity: 1; }
-                    }
-                    @keyframes drawLine {
-                        0% { width: 0; }
-                        100% { width: 120px; }
-                    }
-                    .splash-title {
-                        animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-                    }
-                    .splash-subtitle {
-                        animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
-                        opacity: 0;
-                    }
-                    .splash-line {
-                        height: 2px;
-                        background: linear-gradient(90deg, transparent, #1f2937, transparent);
-                        animation: drawLine 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
-                        width: 0;
-                    }
-                `}</style>
-            </div>
-
-            <div className="min-h-screen bg-white text-gray-900">
-                {/* Header */}
-                <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur">
-                    <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-                        <div className="flex items-center gap-4">
-                            <Button variant="ghost" size="sm" to="/">
-                                ← Home
-                            </Button>
-                            <div className="h-4 w-px bg-gray-300" />
-                            <div className="text-sm font-semibold">好きを、語れ。</div>
-                        </div>
-                        <nav className="hidden gap-5 text-sm text-gray-600 md:flex">
-                            <a className="hover:text-gray-900" href="#about">
-                                概要
-                            </a>
-                            <a className="hover:text-gray-900" href="#cfp">
-                                LT応募
-                            </a>
-                            <a className="hover:text-gray-900" href="#timetable">
-                                TS
-                            </a>
-                            <a className="hover:text-gray-900" href="#join">
-                                参加方法
-                            </a>
-                            <a className="hover:text-gray-900" href="#faq">
-                                FAQ
-                            </a>
-                        </nav>
-                        <Button variant="primary" to="/events/lt-1/register">
-                            参加登録
-                        </Button>
-                    </div>
-                </header>
-
-                {/* Hero */}
-                <div className="bg-white">
-                    <div className="mx-auto w-full max-w-6xl px-4 pt-10 pb-14">
-                        <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
-                            <div>
-                                <div className="flex flex-wrap gap-2">
-                                    <Badge label="LT応募〆 TBD" />
-                                    <Badge label="参加登録〆 TBD" />
-                                </div>
-
-                                <h1 className="mt-5 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
-                                    好きを、語れ。
-                                </h1>
-                                <p className="mt-3 text-lg font-medium text-gray-900">
-                                    湘南藤沢高専 LT会
-                                </p>
-                                <p className="mt-2 text-sm leading-6 text-gray-600">
-                                    Discord開催｜参加者・LT登壇者募集中
-                                </p>
-
-                                <div className="mt-6 flex flex-wrap gap-3">
-                                    <Button variant="primary" to="/events/lt-1/register">
-                                        参加登録
-                                    </Button>
-                                    <Button variant="secondary" href={DISCORD_INVITE_URL}>
-                                        Discord参加
-                                    </Button>
-                                </div>
-
-                                <p className="mt-6 text-xs text-gray-500">
-                                    正式名称：好きを語れ！湘南藤沢高専LT会！！
-                                </p>
-                            </div>
-
-                            <div className="rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 p-4 sm:p-6">
-                                {import.meta.env.VITE_YOUTUBE_PR_VIDEO_URL ? (
-                                    <div className="aspect-video w-full overflow-hidden rounded-xl shadow-sm ring-1 ring-gray-200">
-                                        <iframe
-                                            className="h-full w-full"
-                                            src={import.meta.env.VITE_YOUTUBE_PR_VIDEO_URL}
-                                            title="PR動画"
-                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                            allowFullScreen
-                                        />
+            <div className="bg-white">
+                <div className="relative isolate pt-14">
+                    <div className="py-24 sm:py-32 lg:pb-40">
+                        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+                            <div className="lg:grid lg:grid-cols-2 lg:gap-x-16 lg:items-center">
+                                <div className="mx-auto max-w-2xl text-center lg:mx-0 lg:text-left">
+                                    <Badge label="イベント開催予告" />
+                                    <h1 className="mt-6 text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
+                                        好きを、語ろう。
+                                    </h1>
+                                    <p className="mt-6 text-lg leading-8 text-gray-600">
+                                        Discord開催｜参加者・LT登壇者募集中
+                                    </p>
+                                    <div className="mt-10 flex items-center justify-center gap-x-6 lg:justify-start">
+                                        <Button variant="primary" to="/events/lt-1/register">
+                                            参加登録
+                                        </Button>
+                                        <Button variant="secondary" href={DISCORD_INVITE_URL}>
+                                            Discord参加
+                                        </Button>
                                     </div>
-                                ) : (
-                                    <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-200">
-                                        <p className="text-sm font-medium text-gray-900">
-                                            Discord開催（オンライン）
-                                        </p>
-                                        <p className="mt-2 text-sm leading-6 text-gray-600">
-                                            参加登録後にDiscord招待リンクをお送りします。当日は開始5分前からチェックインできます。
-                                        </p>
+                                    <p className="mt-6 text-xs text-gray-500">
+                                        正式名称：好きを語ろう！湘南藤沢高専LT会！！
+                                    </p>
+                                </div>
+                                <div className="mt-16 lg:mt-0">
+                                    <div className="-m-2 rounded-xl bg-gray-900/5 p-2 ring-1 ring-inset ring-gray-900/10 lg:-m-4 lg:rounded-2xl lg:p-4">
+                                        <div className="rounded-xl border border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 p-4 sm:p-6">
+                                            {import.meta.env.VITE_YOUTUBE_PR_VIDEO_URL ? (
+                                                <div className="aspect-video w-full overflow-hidden rounded-xl shadow-sm ring-1 ring-gray-200">
+                                                    <iframe
+                                                        className="h-full w-full"
+                                                        src={import.meta.env.VITE_YOUTUBE_PR_VIDEO_URL}
+                                                        title="PR動画"
+                                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                                        allowFullScreen
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-200">
+                                                    <p className="text-sm font-medium text-gray-900">
+                                                        Discord開催（オンライン）
+                                                    </p>
+                                                    <p className="mt-2 text-sm leading-6 text-gray-600">
+                                                        参加登録後にDiscord招待リンクをお送りします。当日は開始5分前からチェックインできます。
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                )}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -232,34 +139,44 @@ export default function LT1() {
                             </thead>
                             <tbody className="divide-y divide-gray-200">
                                 <tr>
-                                    <td className="px-4 py-3">19:00</td>
+                                    <td className="px-4 py-3">19:30</td>
                                     <td className="px-4 py-3">オープニング・挨拶</td>
-                                    <td className="px-4 py-3">10分</td>
-                                </tr>
-                                <tr>
-                                    <td className="px-4 py-3">19:10</td>
-                                    <td className="px-4 py-3">LT発表（発表5分＋質疑2分）× n組</td>
-                                    <td className="px-4 py-3">TBD</td>
-                                </tr>
-                                <tr>
-                                    <td className="px-4 py-3">-</td>
-                                    <td className="px-4 py-3 text-gray-500">休憩（司会交代など）</td>
                                     <td className="px-4 py-3">5分</td>
                                 </tr>
                                 <tr>
-                                    <td className="px-4 py-3">20:30頃</td>
-                                    <td className="px-4 py-3">総括・次回テーマ発表</td>
-                                    <td className="px-4 py-3">15分</td>
+                                    <td className="px-4 py-3">19:35</td>
+                                    <td className="px-4 py-3">プログラム確認</td>
+                                    <td className="px-4 py-3">5分</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-3">19:40</td>
+                                    <td className="px-4 py-3">LT発表 前半（5組）</td>
+                                    <td className="px-4 py-3">35分</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-3">20:15</td>
+                                    <td className="px-4 py-3 text-gray-500">休憩（司会交代）</td>
+                                    <td className="px-4 py-3">10分</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-3">20:25</td>
+                                    <td className="px-4 py-3">LT発表 後半（5組）</td>
+                                    <td className="px-4 py-3">35分</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-3">21:00</td>
+                                    <td className="px-4 py-3">総括・クロージング</td>
+                                    <td className="px-4 py-3">10分</td>
                                 </tr>
                                 <tr className="bg-gray-50">
-                                    <td className="px-4 py-3">20:45〜</td>
-                                    <td className="px-4 py-3">任意交流会（VC分けて感想会など）</td>
+                                    <td className="px-4 py-3">21:10〜</td>
+                                    <td className="px-4 py-3">任意交流会</td>
                                     <td className="px-4 py-3">自由</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
-                    <p className="mt-3 text-xs text-gray-500">※ 開催日時はメンバー確定後にアンケートで決定予定</p>
+                    <p className="mt-3 text-xs text-gray-500">※ 開催日時：2/22 19:30〜</p>
                 </Section>
 
                 <Section id="join" title="参加方法（Discord）">
@@ -307,12 +224,12 @@ export default function LT1() {
                 <footer className="border-t border-gray-200 py-10">
                     <div className="mx-auto max-w-6xl px-4 text-sm text-gray-600">
                         <div className="font-medium text-gray-900">
-                            好きを語れ！湘南藤沢高専LT会！！
+                            好きを語ろう！湘南藤沢高専LT会！！
                         </div>
                         <p className="mt-2">主催：LT会運営</p>
                     </div>
                 </footer>
-            </div>
+            </div >
         </>
     );
 }
