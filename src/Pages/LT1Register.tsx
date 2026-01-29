@@ -42,7 +42,7 @@ export default function LT1Register() {
                     { name: "発表概要", value: description || "未入力" },
                 ],
                 timestamp: new Date().toISOString(),
-                footer: { text: "好きを語れ！湘南藤沢高専LT会" },
+                footer: { text: "好きを語ろう！湘南藤沢高専LT会" },
             }
             : {
                 title: "👀 聴講参加申込",
@@ -52,7 +52,7 @@ export default function LT1Register() {
                     { name: "Discord ID", value: discordId || "未入力", inline: true },
                 ],
                 timestamp: new Date().toISOString(),
-                footer: { text: "好きを語れ！湘南藤沢高専LT会" },
+                footer: { text: "好きを語ろう！湘南藤沢高専LT会" },
             };
 
         try {
@@ -109,7 +109,7 @@ export default function LT1Register() {
                 <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-4">
                     <div>
                         <div className="text-sm font-semibold text-gray-900">参加登録 / LT応募</div>
-                        <div className="text-xs text-gray-600">好きを語れ！湘南藤沢高専LT会</div>
+                        <div className="text-xs text-gray-600">好きを語ろう！湘南藤沢高専LT会</div>
                     </div>
                     <Link className="text-sm text-gray-600 hover:text-gray-900" to="/events/lt-1">
                         ← 戻る
