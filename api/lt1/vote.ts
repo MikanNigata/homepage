@@ -1,15 +1,26 @@
 import { isStrongSessionSecret, readSession } from "../_lib/session.js";
-import { readJson, sendJson } from "../_lib/http.js";
+import { PayloadTooLargeError, readJson, sendJson } from "../_lib/http.js";
 import { checkRateLimit } from "../_lib/rateLimit.js";
 import { enforceCsrf, enforceJson } from "../_lib/requestGuard.js";
 import { serializeCookie, parseCookies } from "../_lib/cookies.js";
+import { lt1Presenters } from "../../shared/lt1Presenters.js";
 
 type VotePayload = {
     presenterId: string;
-    presenterName: string;
+    presenterName?: string;
 };
 
 const sanitizeLog = (value: string) => value.replace(/[\x00-\x1F\x7F]/g, "");
+const presentersById = new Map(lt1Presenters.map((presenter) => [presenter.id, presenter]));
+
+function validateWebhookUrl(raw: string) {
+    const parsed = new URL(raw);
+    const allowedHosts = new Set(["discord.com", "canary.discord.com", "ptb.discord.com"]);
+    if (parsed.protocol !== "https:" || !allowedHosts.has(parsed.hostname)) {
+        throw new Error("Invalid webhook host/protocol");
+    }
+    return parsed;
+}
 
 export default async function handler(
     req: { method?: string; headers?: Record<string, string | undefined> } & AsyncIterable<Uint8Array>,
@@ -51,37 +62,52 @@ export default async function handler(
     let body: VotePayload;
     try {
         body = await readJson<VotePayload>(req, { maxBytes: 1024 });
-    } catch {
+    } catch (error) {
+        if (error instanceof PayloadTooLargeError) {
+            return sendJson(res, 413, { error: "Payload too large." });
+        }
         return sendJson(res, 400, { error: "Invalid JSON." });
     }
 
     const presenterId = (body.presenterId ?? "").trim();
-    const presenterName = (body.presenterName ?? "").trim();
-
-    if (!presenterId || !presenterName) {
+    if (!presenterId) {
         return sendJson(res, 400, { error: "Presenter information is missing." });
     }
-    if (presenterId.length > 50 || presenterName.length > 100) {
+    if (presenterId.length > 50) {
         return sendJson(res, 400, { error: "Invalid data format." });
+    }
+    const presenter = presentersById.get(presenterId);
+    if (!presenter) {
+        return sendJson(res, 400, { error: "Unknown presenter." });
+    }
+    if (presenter.status !== "active") {
+        return sendJson(res, 400, { error: "Presenter is not available." });
     }
 
     const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
     if (!webhookUrl) {
         return sendJson(res, 500, { error: "Webhook is not configured." });
     }
+    let parsedWebhookUrl: URL;
+    try {
+        parsedWebhookUrl = validateWebhookUrl(webhookUrl);
+    } catch {
+        return sendJson(res, 500, { error: "Invalid webhook configuration." });
+    }
 
     const displayName = session.globalName
         ? `${session.globalName} (${session.username})`
         : session.username;
     const safeDisplayName = sanitizeLog(displayName);
-    const safePresenter = sanitizeLog(presenterName);
+    const safePresenter = sanitizeLog(presenter.name);
+    const safePresenterId = sanitizeLog(presenter.id);
 
     const embed = {
         title: "LT Vote",
         color: 0xF59E0B, // Amber/Gold
         fields: [
             { name: "Voted For", value: safePresenter },
-            { name: "ID", value: presenterId },
+            { name: "ID", value: safePresenterId },
             { name: "Voter", value: `${safeDisplayName}\nID: ${session.sub}` },
         ],
         timestamp: new Date().toISOString(),
@@ -92,9 +118,10 @@ export default async function handler(
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
     try {
-        const response = await fetch(webhookUrl, {
+        const response = await fetch(parsedWebhookUrl.toString(), {
             method: "POST",
             headers: { "Content-Type": "application/json" },
+            redirect: "error",
             signal: controller.signal,
             body: JSON.stringify({
                 embeds: [embed],

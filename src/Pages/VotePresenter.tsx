@@ -1,23 +1,13 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Button from "../Components/ui/Button";
-
-type Presenter = {
-    id: string;
-    name: string;
-    title: string;
-};
+import { lt1Presenters } from "../../shared/lt1Presenters";
 
 type AuthUser = {
     id: string;
     username: string;
     globalName?: string | null;
 };
-
-const mockPresenters: Presenter[] = [
-    { id: "tbd-1", name: "Coming Soon", title: "募集中" },
-    { id: "tbd-2", name: "Coming Soon", title: "募集中" },
-];
 
 export default function VotePresenter() {
     const [selected, setSelected] = useState<string | null>(null);
@@ -27,6 +17,8 @@ export default function VotePresenter() {
 
     const [authLoading, setAuthLoading] = useState(true);
     const [user, setUser] = useState<AuthUser | null>(null);
+
+    const activePresenters = lt1Presenters.filter((p) => p.status === "active");
 
     useEffect(() => {
         let active = true;
@@ -64,8 +56,12 @@ export default function VotePresenter() {
         setIsSubmitting(true);
         setError(null);
 
-        const presenter = mockPresenters.find((p) => p.id === selected);
-        if (!presenter) return;
+        const presenter = activePresenters.find((p) => p.id === selected);
+        if (!presenter) {
+            setIsSubmitting(false);
+            setError("Presenter not found.");
+            return;
+        }
 
         try {
             const res = await fetch("/api/lt1/vote", {
@@ -157,7 +153,7 @@ export default function VotePresenter() {
                 </div>
 
                 <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                    {mockPresenters.map((p) => {
+                    {activePresenters.map((p) => {
                         const active = selected === p.id;
                         return (
                             <button
