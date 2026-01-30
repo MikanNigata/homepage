@@ -10,8 +10,12 @@ type SubmitPayload = {
 };
 
 const sanitizeLog = (value: string) => value.replace(/[\x00-\x1F\x7F]/g, "");
+const TRUST_PROXY_ENABLED = process.env.TRUST_PROXY === "true";
 
 function getTrustedIp(req: { headers?: Record<string, string | undefined> }) {
+  if (!TRUST_PROXY_ENABLED) {
+    return "";
+  }
   const vercel = req.headers?.["x-vercel-forwarded-for"];
   if (vercel) {
     return vercel.split(",")[0]?.trim() ?? "";
@@ -74,6 +78,13 @@ export default async function handler(
     const ipLimit = checkRateLimit(ipKey, { limit: 30, windowMs: 10 * 60 * 1000 });
     if (!ipLimit.allowed) {
       res.setHeader("Retry-After", Math.ceil(ipLimit.retryAfterMs / 1000).toString());
+      return sendJson(res, 429, { error: "Rate limit exceeded." });
+    }
+  } else {
+    const globalKey = "lt1:submit-global";
+    const globalLimit = checkRateLimit(globalKey, { limit: 60, windowMs: 10 * 60 * 1000 });
+    if (!globalLimit.allowed) {
+      res.setHeader("Retry-After", Math.ceil(globalLimit.retryAfterMs / 1000).toString());
       return sendJson(res, 429, { error: "Rate limit exceeded." });
     }
   }

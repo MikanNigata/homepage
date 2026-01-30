@@ -1,4 +1,4 @@
-import { clearStateCookie, createSessionCookie, readStateCookie, SESSION_MAX_AGE_SECONDS, type SessionPayload } from "../_lib/session.js";
+import { clearStateCookie, createSessionCookie, isStrongSessionSecret, readStateCookie, SESSION_MAX_AGE_SECONDS, type SessionPayload } from "../_lib/session.js";
 import { sendJson } from "../_lib/http.js";
 
 type DiscordUser = {
@@ -6,7 +6,18 @@ type DiscordUser = {
   username: string;
   global_name?: string | null;
   avatar?: string | null;
+  bot?: boolean;
 };
+
+async function fetchWithTimeout(input: string, init: RequestInit, timeoutMs: number) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(input, { ...init, signal: controller.signal, redirect: "error" });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 
 export default async function handler(
   req: { method?: string; url?: string; headers?: { cookie?: string } },
@@ -24,6 +35,9 @@ export default async function handler(
   if (!clientId || !clientSecret || !redirectUri || !sessionSecret) {
     return sendJson(res, 500, { error: "Missing OAuth configuration." });
   }
+  if (!isStrongSessionSecret(sessionSecret)) {
+    return sendJson(res, 500, { error: "Session secret is too weak." });
+  }
 
   const url = new URL(req.url ?? "", "http://localhost");
   const code = url.searchParams.get("code");
@@ -34,7 +48,7 @@ export default async function handler(
     return sendJson(res, 400, { error: `OAuth error: ${error}` });
   }
 
-  const storedState = readStateCookie(req);
+  const storedState = readStateCookie(req, sessionSecret);
   if (!code || !state || !storedState || state !== storedState) {
     return sendJson(res, 400, { error: "Invalid OAuth state." });
   }
@@ -60,17 +74,27 @@ export default async function handler(
     return sendJson(res, 500, { error: "Invalid base URL configuration." });
   }
 
-  const tokenRes = await fetch("https://discord.com/api/oauth2/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      client_id: clientId,
-      client_secret: clientSecret,
-      grant_type: "authorization_code",
-      code,
-      redirect_uri: redirectUri,
-    }),
-  });
+  let tokenRes: Awaited<ReturnType<typeof fetch>>;
+  try {
+    tokenRes = await fetchWithTimeout(
+      "https://discord.com/api/oauth2/token",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          client_id: clientId,
+          client_secret: clientSecret,
+          grant_type: "authorization_code",
+          code,
+          redirect_uri: redirectUri,
+        }),
+      },
+      5000,
+    );
+  } catch (error) {
+    console.error(`[Auth] Token exchange failed: ${error instanceof Error ? error.message : "unknown error"}`);
+    return sendJson(res, 502, { error: "Failed to exchange OAuth token." });
+  }
 
   if (!tokenRes.ok) {
     return sendJson(res, 502, { error: "Failed to exchange OAuth token." });
@@ -81,15 +105,28 @@ export default async function handler(
     return sendJson(res, 502, { error: "Missing access token." });
   }
 
-  const userRes = await fetch("https://discord.com/api/users/@me", {
-    headers: { Authorization: `Bearer ${tokenData.access_token}` },
-  });
+  let userRes: Awaited<ReturnType<typeof fetch>>;
+  try {
+    userRes = await fetchWithTimeout(
+      "https://discord.com/api/users/@me",
+      {
+        headers: { Authorization: `Bearer ${tokenData.access_token}` },
+      },
+      5000,
+    );
+  } catch (error) {
+    console.error(`[Auth] User fetch failed: ${error instanceof Error ? error.message : "unknown error"}`);
+    return sendJson(res, 502, { error: "Failed to fetch Discord user." });
+  }
 
   if (!userRes.ok) {
     return sendJson(res, 502, { error: "Failed to fetch Discord user." });
   }
 
   const user = (await userRes.json()) as DiscordUser;
+  if (user.bot) {
+    return sendJson(res, 403, { error: "Bot accounts are not allowed." });
+  }
   const now = Math.floor(Date.now() / 1000);
   const session: SessionPayload = {
     sub: user.id,
