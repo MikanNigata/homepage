@@ -40,11 +40,11 @@ function safeEqual(a: string, b: string) {
 }
 
 function isSecureCookie() {
-  const baseUrl = process.env.APP_BASE_URL ?? "";
-  if (baseUrl.startsWith("https://")) {
+  if (process.env.NODE_ENV === "production") {
     return true;
   }
-  return process.env.NODE_ENV === "production";
+  const baseUrl = process.env.APP_BASE_URL ?? "";
+  return baseUrl.startsWith("https://");
 }
 
 function createToken(payload: SessionPayload, secret: string) {

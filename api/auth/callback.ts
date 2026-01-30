@@ -9,7 +9,7 @@ type DiscordUser = {
 };
 
 export default async function handler(
-  req: { method?: string; url?: string; headers?: { host?: string; "x-forwarded-proto"?: string; cookie?: string } },
+  req: { method?: string; url?: string; headers?: { cookie?: string } },
   res: { statusCode: number; setHeader: (name: string, value: string | string[]) => void; end: (body?: string) => void },
 ) {
   if (req.method !== "GET") {
@@ -21,16 +21,11 @@ export default async function handler(
   const redirectUri = process.env.DISCORD_REDIRECT_URI;
   const sessionSecret = process.env.SESSION_SECRET;
 
-  const proto = req.headers?.["x-forwarded-proto"] ?? "http";
-  const host = req.headers?.host ?? "localhost";
-  const fallbackBaseUrl = `${proto}://${host}`;
-  const appBaseUrl = (process.env.APP_BASE_URL ?? fallbackBaseUrl).replace(/\/$/, "");
-
   if (!clientId || !clientSecret || !redirectUri || !sessionSecret) {
     return sendJson(res, 500, { error: "Missing OAuth configuration." });
   }
 
-  const url = new URL(req.url ?? "", fallbackBaseUrl);
+  const url = new URL(req.url ?? "", "http://localhost");
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");
   const error = url.searchParams.get("error");
@@ -42,6 +37,27 @@ export default async function handler(
   const storedState = readStateCookie(req);
   if (!code || !state || !storedState || state !== storedState) {
     return sendJson(res, 400, { error: "Invalid OAuth state." });
+  }
+
+  let appBaseUrl: string;
+  try {
+    if (process.env.APP_BASE_URL) {
+      const parsed = new URL(process.env.APP_BASE_URL);
+      const basePath = parsed.pathname.replace(/\/$/, "");
+      appBaseUrl = `${parsed.origin}${basePath === "/" ? "" : basePath}`;
+    } else {
+      const parsed = new URL(redirectUri);
+      const callbackSuffix = "/api/auth/callback";
+      let basePath = parsed.pathname;
+      if (basePath.endsWith(callbackSuffix)) {
+        basePath = basePath.slice(0, -callbackSuffix.length);
+      } else {
+        basePath = "";
+      }
+      appBaseUrl = `${parsed.origin}${basePath}`;
+    }
+  } catch {
+    return sendJson(res, 500, { error: "Invalid base URL configuration." });
   }
 
   const tokenRes = await fetch("https://discord.com/api/oauth2/token", {
