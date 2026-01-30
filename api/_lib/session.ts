@@ -9,10 +9,9 @@ export type SessionPayload = {
   exp: number;
 };
 
-const SESSION_COOKIE = "lt_session";
-const STATE_COOKIE = "lt_oauth_state";
 export const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24;
 const STATE_MAX_AGE_SECONDS = 60 * 5;
+const MIN_SESSION_SECRET_BYTES = 32;
 
 function base64UrlEncode(input: string | Buffer) {
   return Buffer.from(input)
@@ -47,6 +46,24 @@ function isSecureCookie() {
   return baseUrl.startsWith("https://");
 }
 
+function getSessionCookieName() {
+  return isSecureCookie() ? "__Host-lt_session" : "lt_session";
+}
+
+function getStateCookieName() {
+  return isSecureCookie() ? "__Host-lt_oauth_state" : "lt_oauth_state";
+}
+
+export function isStrongSessionSecret(secret: string) {
+  return Buffer.byteLength(secret, "utf8") >= MIN_SESSION_SECRET_BYTES;
+}
+
+function assertStrongSessionSecret(secret: string) {
+  if (!isStrongSessionSecret(secret)) {
+    throw new Error("SESSION_SECRET too weak: require >= 32 bytes");
+  }
+}
+
 function createToken(payload: SessionPayload, secret: string) {
   const data = base64UrlEncode(JSON.stringify(payload));
   const signature = sign(`v1.${data}`, secret);
@@ -76,7 +93,7 @@ function verifyToken(token: string, secret: string): SessionPayload | null {
 }
 
 export function createStateCookie(state: string) {
-  return serializeCookie(STATE_COOKIE, state, {
+  return serializeCookie(getStateCookieName(), state, {
     httpOnly: true,
     secure: isSecureCookie(),
     sameSite: "Lax",
@@ -86,7 +103,7 @@ export function createStateCookie(state: string) {
 }
 
 export function clearStateCookie() {
-  return serializeCookie(STATE_COOKIE, "", {
+  return serializeCookie(getStateCookieName(), "", {
     httpOnly: true,
     secure: isSecureCookie(),
     sameSite: "Lax",
@@ -97,11 +114,12 @@ export function clearStateCookie() {
 
 export function readStateCookie(req: { headers?: { cookie?: string } }) {
   const cookies = parseCookies(req.headers?.cookie);
-  return cookies[STATE_COOKIE] ?? null;
+  return cookies[getStateCookieName()] ?? null;
 }
 
 export function createSessionCookie(payload: SessionPayload, secret: string) {
-  return serializeCookie(SESSION_COOKIE, createToken(payload, secret), {
+  assertStrongSessionSecret(secret);
+  return serializeCookie(getSessionCookieName(), createToken(payload, secret), {
     httpOnly: true,
     secure: isSecureCookie(),
     sameSite: "Lax",
@@ -111,7 +129,7 @@ export function createSessionCookie(payload: SessionPayload, secret: string) {
 }
 
 export function clearSessionCookie() {
-  return serializeCookie(SESSION_COOKIE, "", {
+  return serializeCookie(getSessionCookieName(), "", {
     httpOnly: true,
     secure: isSecureCookie(),
     sameSite: "Lax",
@@ -121,8 +139,9 @@ export function clearSessionCookie() {
 }
 
 export function readSession(req: { headers?: { cookie?: string } }, secret: string) {
+  assertStrongSessionSecret(secret);
   const cookies = parseCookies(req.headers?.cookie);
-  const token = cookies[SESSION_COOKIE];
+  const token = cookies[getSessionCookieName()];
   if (!token) {
     return null;
   }

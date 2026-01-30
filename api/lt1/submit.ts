@@ -1,24 +1,59 @@
-import { readSession } from "../_lib/session.js";
+import { isStrongSessionSecret, readSession } from "../_lib/session.js";
 import { findForbiddenReason } from "../_lib/validation.js";
 import { PayloadTooLargeError, readJson, sendJson } from "../_lib/http.js";
 import { checkRateLimit } from "../_lib/rateLimit.js";
+import { enforceCsrf, enforceJson } from "../_lib/requestGuard.js";
 
 type SubmitPayload = {
   title?: string;
   description?: string;
 };
 
+const sanitizeLog = (value: string) => value.replace(/[\x00-\x1F\x7F]/g, "");
+
+function getTrustedIp(req: { headers?: Record<string, string | undefined> }) {
+  const vercel = req.headers?.["x-vercel-forwarded-for"];
+  if (vercel) {
+    return vercel.split(",")[0]?.trim() ?? "";
+  }
+
+  const cf = req.headers?.["cf-connecting-ip"];
+  if (cf) {
+    return cf.trim();
+  }
+
+  return "";
+}
+
+function validateWebhookUrl(raw: string) {
+  const parsed = new URL(raw);
+  const allowedHosts = new Set(["discord.com", "canary.discord.com", "ptb.discord.com"]);
+  if (parsed.protocol !== "https:" || !allowedHosts.has(parsed.hostname)) {
+    throw new Error("Invalid webhook host/protocol");
+  }
+  return parsed;
+}
+
 export default async function handler(
-  req: { method?: string; headers?: { cookie?: string; "x-forwarded-for"?: string } } & AsyncIterable<Uint8Array>,
+  req: { method?: string; headers?: Record<string, string | undefined> } & AsyncIterable<Uint8Array>,
   res: { statusCode: number; setHeader: (name: string, value: string) => void; end: (body?: string) => void },
 ) {
   if (req.method !== "POST") {
     return sendJson(res, 405, { error: "Method not allowed." });
   }
+  if (!enforceCsrf(req, res)) {
+    return;
+  }
+  if (!enforceJson(req, res)) {
+    return;
+  }
 
   const sessionSecret = process.env.SESSION_SECRET;
   if (!sessionSecret) {
     return sendJson(res, 500, { error: "Missing session secret." });
+  }
+  if (!isStrongSessionSecret(sessionSecret)) {
+    return sendJson(res, 500, { error: "Session secret is too weak." });
   }
 
   const session = readSession(req, sessionSecret);
@@ -26,13 +61,21 @@ export default async function handler(
     return sendJson(res, 401, { error: "Sign in with Discord first." });
   }
 
-  const forwardedFor = req.headers?.["x-forwarded-for"];
-  const ip = forwardedFor ? forwardedFor.split(",")[0]?.trim() : "";
-  const rateKey = `lt1:submit:${session.sub}${ip ? `:${ip}` : ""}`;
-  const limit = checkRateLimit(rateKey, { limit: 5, windowMs: 10 * 60 * 1000 });
-  if (!limit.allowed) {
-    res.setHeader("Retry-After", Math.ceil(limit.retryAfterMs / 1000).toString());
-    return sendJson(res, 429, { error: "Too many submissions. Please wait and try again." });
+  const userKey = `lt1:submit:${session.sub}`;
+  const userLimit = checkRateLimit(userKey, { limit: 5, windowMs: 10 * 60 * 1000 });
+  if (!userLimit.allowed) {
+    res.setHeader("Retry-After", Math.ceil(userLimit.retryAfterMs / 1000).toString());
+    return sendJson(res, 429, { error: "Rate limit exceeded." });
+  }
+
+  const trustedIp = getTrustedIp(req);
+  if (trustedIp) {
+    const ipKey = `lt1:submit-ip:${trustedIp}`;
+    const ipLimit = checkRateLimit(ipKey, { limit: 30, windowMs: 10 * 60 * 1000 });
+    if (!ipLimit.allowed) {
+      res.setHeader("Retry-After", Math.ceil(ipLimit.retryAfterMs / 1000).toString());
+      return sendJson(res, 429, { error: "Rate limit exceeded." });
+    }
   }
 
   let body: SubmitPayload;
@@ -69,9 +112,18 @@ export default async function handler(
     return sendJson(res, 500, { error: "Webhook is not configured." });
   }
 
+  let parsedWebhookUrl: URL;
+  try {
+    parsedWebhookUrl = validateWebhookUrl(webhookUrl);
+  } catch {
+    return sendJson(res, 500, { error: "Invalid webhook configuration." });
+  }
+
   const displayName = session.globalName
     ? `${session.globalName} (${session.username})`
     : session.username;
+  const safeDisplayName = sanitizeLog(displayName);
+  const safeTitle = sanitizeLog(title);
 
   const embed = {
     title: "LT Submission",
@@ -79,21 +131,33 @@ export default async function handler(
     fields: [
       { name: "Title", value: title },
       { name: "Description", value: description || "N/A" },
-      { name: "Submitted by", value: `${displayName}\nID: ${session.sub}` },
+      { name: "Submitted by", value: `${safeDisplayName}\nID: ${session.sub}` },
     ],
     timestamp: new Date().toISOString(),
   };
 
-  console.log(`[LT1] Submission: ${displayName} (${session.sub}) - ${title}`);
+  console.log(`[LT1] Submission: ${safeDisplayName} (${session.sub}) - ${safeTitle}`);
 
-  const response = await fetch(webhookUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      embeds: [embed],
-      allowed_mentions: { parse: [] },
-    }),
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000);
+  let response: Awaited<ReturnType<typeof fetch>>;
+  try {
+    response = await fetch(parsedWebhookUrl.toString(), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      redirect: "error",
+      signal: controller.signal,
+      body: JSON.stringify({
+        embeds: [embed],
+        allowed_mentions: { parse: [] },
+      }),
+    });
+  } catch (error) {
+    console.error(`[LT1] Webhook request failed: ${error instanceof Error ? error.message : "unknown error"}`);
+    return sendJson(res, 502, { error: "Failed to deliver to Discord." });
+  } finally {
+    clearTimeout(timeout);
+  }
 
   if (!response.ok) {
     console.error(`[LT1] Failed to send webhook: ${response.status} ${response.statusText}`);
