@@ -92,8 +92,11 @@ function verifyToken(token: string, secret: string): SessionPayload | null {
   }
 }
 
-export function createStateCookie(state: string) {
-  return serializeCookie(getStateCookieName(), state, {
+export function createStateCookie(state: string, secret: string) {
+  assertStrongSessionSecret(secret);
+  const signature = sign(`state.${state}`, secret);
+  const value = `v1.${state}.${signature}`;
+  return serializeCookie(getStateCookieName(), value, {
     httpOnly: true,
     secure: isSecureCookie(),
     sameSite: "Lax",
@@ -112,9 +115,22 @@ export function clearStateCookie() {
   });
 }
 
-export function readStateCookie(req: { headers?: { cookie?: string } }) {
+export function readStateCookie(req: { headers?: { cookie?: string } }, secret: string) {
+  assertStrongSessionSecret(secret);
   const cookies = parseCookies(req.headers?.cookie);
-  return cookies[getStateCookieName()] ?? null;
+  const token = cookies[getStateCookieName()];
+  if (!token) {
+    return null;
+  }
+  const [version, state, signature] = token.split(".");
+  if (version !== "v1" || !state || !signature) {
+    return null;
+  }
+  const expected = sign(`state.${state}`, secret);
+  if (!safeEqual(signature, expected)) {
+    return null;
+  }
+  return state;
 }
 
 export function createSessionCookie(payload: SessionPayload, secret: string) {
