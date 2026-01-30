@@ -1,4 +1,4 @@
-import { readSession } from "../_lib/session.js";
+import { isStrongSessionSecret, readSession } from "../_lib/session.js";
 import { sendJson } from "../_lib/http.js";
 
 export default function handler(
@@ -12,6 +12,9 @@ export default function handler(
   const sessionSecret = process.env.SESSION_SECRET;
   if (!sessionSecret) {
     return sendJson(res, 500, { error: "Missing session secret." });
+  }
+  if (!isStrongSessionSecret(sessionSecret)) {
+    return sendJson(res, 500, { error: "Session secret is too weak." });
   }
 
   const session = readSession(req, sessionSecret);
