@@ -16,7 +16,11 @@ export function parseCookies(header?: string): Record<string, string> {
     if (!name) {
       return acc;
     }
-    acc[name] = decodeURIComponent(rest.join("="));
+    try {
+      acc[name] = decodeURIComponent(rest.join("="));
+    } catch {
+      // Ignore malformed cookie values to avoid 500s on bad input.
+    }
     return acc;
   }, {});
 }

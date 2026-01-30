@@ -1,6 +1,7 @@
 import { readSession } from "../_lib/session.js";
 import { findForbiddenReason } from "../_lib/validation.js";
-import { readJson, sendJson } from "../_lib/http.js";
+import { PayloadTooLargeError, readJson, sendJson } from "../_lib/http.js";
+import { checkRateLimit } from "../_lib/rateLimit.js";
 
 type SubmitPayload = {
   title?: string;
@@ -8,7 +9,7 @@ type SubmitPayload = {
 };
 
 export default async function handler(
-  req: { method?: string; headers?: { cookie?: string } } & AsyncIterable<Uint8Array>,
+  req: { method?: string; headers?: { cookie?: string; "x-forwarded-for"?: string } } & AsyncIterable<Uint8Array>,
   res: { statusCode: number; setHeader: (name: string, value: string) => void; end: (body?: string) => void },
 ) {
   if (req.method !== "POST") {
@@ -25,10 +26,22 @@ export default async function handler(
     return sendJson(res, 401, { error: "Sign in with Discord first." });
   }
 
+  const forwardedFor = req.headers?.["x-forwarded-for"];
+  const ip = forwardedFor ? forwardedFor.split(",")[0]?.trim() : "";
+  const rateKey = `lt1:submit:${session.sub}${ip ? `:${ip}` : ""}`;
+  const limit = checkRateLimit(rateKey, { limit: 5, windowMs: 10 * 60 * 1000 });
+  if (!limit.allowed) {
+    res.setHeader("Retry-After", Math.ceil(limit.retryAfterMs / 1000).toString());
+    return sendJson(res, 429, { error: "Too many submissions. Please wait and try again." });
+  }
+
   let body: SubmitPayload;
   try {
-    body = await readJson<SubmitPayload>(req);
-  } catch {
+    body = await readJson<SubmitPayload>(req, { maxBytes: 16 * 1024 });
+  } catch (error) {
+    if (error instanceof PayloadTooLargeError) {
+      return sendJson(res, 413, { error: "Payload too large." });
+    }
     return sendJson(res, 400, { error: "Invalid JSON." });
   }
 
