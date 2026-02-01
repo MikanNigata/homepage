@@ -79,6 +79,15 @@ export default async function handler(
     return sendJson(res, 400, { error: "Unknown presenter." });
   }
 
+  // Permission Check: Admin or Self-service
+  const adminIds = (process.env.ADMIN_DISCORD_IDS ?? "").split(",").map(id => id.trim());
+  const isUserAdmin = adminIds.includes(session.sub);
+  const isUserPresenter = presenter.discordId === session.sub;
+
+  if (!isUserAdmin && !isUserPresenter) {
+    return sendJson(res, 403, { error: "You do not have permission to cancel this presenter." });
+  }
+
   const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
   if (!webhookUrl) {
     return sendJson(res, 500, { error: "Webhook is not configured." });
