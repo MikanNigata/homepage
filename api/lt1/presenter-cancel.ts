@@ -20,7 +20,7 @@ const sanitizeLog = (value: string) =>
 const presentersById = new Map(lt1Presenters.map((presenter) => [presenter.id, presenter]));
 
 function parseAdminIds() {
-  const raw = process.env.LT1_CANCEL_ADMIN_IDS ?? "";
+  const raw = process.env.LT1_CANCEL_ADMIN_IDS ?? process.env.ADMIN_DISCORD_IDS ?? "";
   return new Set(
     raw
       .split(",")
@@ -34,7 +34,7 @@ function canCancelPresenter(sessionUserId: string, presenter: Lt1Presenter) {
   if (adminIds.has(sessionUserId)) {
     return true;
   }
-  return presenter.ownerDiscordId === sessionUserId;
+  return (presenter.ownerDiscordId ?? presenter.discordId) === sessionUserId;
 }
 
 function validateWebhookUrl(raw: string) {
