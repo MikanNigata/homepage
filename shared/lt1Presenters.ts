@@ -2,6 +2,7 @@ export type Lt1Presenter = {
   id: string;
   name: string;
   title: string;
+  ownerDiscordId?: string;
   status: "active" | "cancelled";
 };
 
