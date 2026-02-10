@@ -1,6 +1,6 @@
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import type { ReactNode } from "react";
-
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import MetaHandler from "./Components/handler/Metahandler";
 import Join from "./Pages/Join";
 import LT1 from "./Pages/LT1";
 import LT1Register from "./Pages/LT1Register";
@@ -75,6 +75,8 @@ export const flatRoutes: Array<RouteType> = routes.flatMap((route) => flattenRou
 function App() {
   return (
     <BrowserRouter>
+      <MetaHandler />
+      
       <Routes>
         {flatRoutes.map((r) => (
           <Route key={r.path} path={r.path} element={r.element} />
