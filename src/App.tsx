@@ -1,4 +1,5 @@
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import type { ReactNode } from "react";
 
 import Join from "./Pages/Join";
 import LT1 from "./Pages/LT1";
@@ -12,17 +13,17 @@ type RouteMeta = {
   navLabel?: string;
   visibleInNav?: boolean;
   protected?: boolean;
-}
+};
 
 type RouteType = {
   path: string;
-  element: React.ReactNode;
+  element: ReactNode;
   meta?: RouteMeta;
 
   children?: Array<RouteType>;
-}
+};
 
-export const routes: Array<RouteType> = [
+const routes: Array<RouteType> = [
   { 
     path: "/", element: <Navigate to="/events/lt-1" replace />, 
     meta: { visibleInNav: false } 
@@ -32,7 +33,7 @@ export const routes: Array<RouteType> = [
     meta: { title: "Join", navLabel: "Join", visibleInNav: true } 
   },
   {
-    "path": "events", element: <Navigate to="/events/lt-1" replace />,
+    path: "events", element: <Navigate to="/events/lt-1" replace />,
     meta: { visibleInNav: false },
     children: [
       {
@@ -54,7 +55,7 @@ export const routes: Array<RouteType> = [
   },
 ]
 
-// build a normalized full path for child routes and flatten the tree
+
 function joinPaths(parent: string, child: string) {
   if (child === "/") return "/";
   if (child.startsWith("/")) return child;
@@ -69,11 +70,13 @@ function flattenRoutes(route: RouteType, parent = ""): Array<RouteType> {
   return [me, ...kids];
 }
 
+export const flatRoutes: Array<RouteType> = routes.flatMap((route) => flattenRoutes(route, ""));
+
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {routes.flatMap((route) => flattenRoutes(route, "")).map((r) => (
+        {flatRoutes.map((r) => (
           <Route key={r.path} path={r.path} element={r.element} />
         ))}
       </Routes>
