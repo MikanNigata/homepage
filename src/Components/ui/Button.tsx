@@ -18,19 +18,19 @@ type Props = {
 };
 
 const base =
-    "inline-flex items-center justify-center rounded-xl font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-2";
+    "inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 whitespace-nowrap";
 
 const sizeStyles: Record<Size, string> = {
-    sm: "px-3 py-2 text-xs",
-    md: "px-5 py-3 text-sm",
-    lg: "px-6 py-4 text-base",
+    sm: "px-3 py-1.5 text-xs h-8 rounded-md",
+    md: "px-4 py-2 text-sm h-10 rounded-md",
+    lg: "px-6 py-3 text-base h-12 rounded-lg",
 };
 
 const styles: Record<Variant, string> = {
-    primary: "bg-gray-900 text-white hover:bg-gray-800 focus:ring-gray-900",
+    primary: "bg-[#000000] text-white hover:bg-[#333] shadow-[0_4px_14px_0_rgba(0,0,0,0.1)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.23)] hover:-translate-y-[1px] focus:ring-[#000000]",
     secondary:
-        "bg-white text-gray-900 ring-1 ring-gray-200 hover:bg-gray-50 focus:ring-gray-900",
-    ghost: "text-gray-700 hover:bg-gray-100 focus:ring-gray-900",
+        "bg-white text-[#000000] border border-[#eaeaea] hover:bg-[#fafafa] shadow-[0_2px_4px_0_rgba(0,0,0,0.02)] focus:ring-[#000000]",
+    ghost: "text-[#666666] hover:text-[#000] hover:bg-[#fafafa] focus:ring-[#000000]",
 };
 
 export default function Button({
