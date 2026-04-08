@@ -15,7 +15,7 @@ export default function HeroSection() {
                 aria-hidden="true"
             />
 
-            <div className="mx-auto grid min-h-[calc(100svh-73px)] max-w-6xl items-start gap-12 px-5 py-12 sm:px-6 lg:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)] lg:px-8 lg:py-14">
+            <div className="mx-auto grid min-h-[calc(100svh-73px)] max-w-6xl items-start gap-12 px-5 py-8 sm:px-6 lg:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)] lg:px-8 lg:py-9">
                 <div className="relative z-10">
                     <p className="lt-kicker tracking-[0.2em] opacity-0 animate-slide-in-left" style={{ animationDelay: '0ms' }}>KOSEN LIGHTNING TALKS</p>
                     <h1 className="mt-5 max-w-4xl font-display text-[3.5rem] font-bold leading-[1.05] tracking-tight text-[var(--text-strong)] sm:text-6xl lg:text-[4.5rem] opacity-0 animate-slide-in-left" style={{ animationDelay: '100ms' }}>
@@ -64,16 +64,16 @@ export default function HeroSection() {
                     </p>
                 </div>
 
-                <div className="relative z-10 opacity-0 animate-slide-in-right" style={{ animationDelay: '400ms' }}>
-                    <div className="lt-hero-panel relative overflow-hidden bg-white p-7 sm:p-8">
+                <div className="relative z-10 opacity-0 animate-slide-in-right lg:mt-4" style={{ animationDelay: '400ms' }}>
+                    <div className="lt-hero-panel relative overflow-hidden bg-white px-6 pb-6 pt-7 sm:px-8 sm:pb-8 sm:pt-9">
                         <div className="relative flex items-center justify-between gap-4 text-[11px] uppercase tracking-[0.24em] text-[var(--text-muted)]">
                             <span>{lt2Event.eventCode}</span>
                             <span className="text-right">{lt2Event.audienceLine}</span>
                         </div>
 
-                        <div className="relative mt-8">
+                        <div className="relative mt-6">
                             <div className="lt-hero-visual">
-                                <div className="relative h-[280px] w-full rounded-xl border border-[var(--line)] bg-[#fafafa] overflow-hidden flex items-center justify-center p-6">
+                                <div className="relative h-[210px] w-full rounded-xl border border-[var(--line)] bg-[#fafafa] overflow-hidden flex items-center justify-center p-4">
                                     {/* Subdued grid background */}
                                     <div className="absolute inset-0 bg-[radial-gradient(var(--line)_1px,transparent_1px)] [background-size:16px_16px] opacity-60" />
                                     
@@ -90,10 +90,10 @@ export default function HeroSection() {
                                         </div>
                                         
                                         {/* Card Body: Abstract Code Editor */}
-                                        <div className="p-6">
-                                            <div className="flex items-start gap-4">
+                                        <div className="p-4">
+                                            <div className="flex items-start gap-3">
                                                 {/* Line Numbers */}
-                                                <div className="flex flex-col gap-3 text-[10px] font-mono text-[#ccc] select-none text-right w-4">
+                                                <div className="flex flex-col gap-2.5 text-[10px] font-mono text-[#ccc] select-none text-right w-4">
                                                     <span>1</span>
                                                     <span>2</span>
                                                     <span>3</span>
@@ -102,7 +102,7 @@ export default function HeroSection() {
                                                 </div>
                                                 
                                                 {/* Code Lines (Abstract) */}
-                                                <div className="flex-1 space-y-3.5">
+                                                <div className="flex-1 space-y-2.5">
                                                     <div className="flex gap-2">
                                                         <div className="h-2 w-12 rounded bg-purple-400 opacity-30" /> {/* keyword */}
                                                         <div className="h-2 w-24 rounded bg-blue-400 opacity-30" /> {/* function */}
@@ -138,17 +138,17 @@ export default function HeroSection() {
                             </div>
                         </div>
 
-                        <div className="relative mt-8 border-b border-[var(--line)] pb-8">
+                        <div className="relative mt-6 border-b border-[var(--line)] pb-7">
                             <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-[var(--text-muted)]">
                                 Save the Date
                             </p>
-                            <div className="mt-4">
-                                <div className="lt-index-number text-[5rem] text-[var(--text-strong)] sm:text-[6rem] leading-none tracking-tighter">
+                            <div className="mt-2">
+                                <div className="lt-index-number text-[4.2rem] text-[var(--text-strong)] sm:text-[5.2rem] leading-none tracking-tighter">
                                     04/25
                                 </div>
                             </div>
 
-                            <div className="mt-8 grid grid-cols-2 gap-4">
+                            <div className="mt-6 grid grid-cols-2 gap-4">
                                 <div>
                                     <div className="border-l-2 border-[var(--line)] pl-4">
                                         <p className="font-mono text-[10px] uppercase tracking-widest text-[#888]">
